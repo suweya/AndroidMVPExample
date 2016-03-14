@@ -1,57 +1,62 @@
 package net.suweya.androidmvp.model;
 
 import android.os.AsyncTask;
+import android.os.SystemClock;
+
+import net.suweya.androidmvp.base.BaseModel;
+import net.suweya.androidmvp.base.HttpResponse;
+import net.suweya.androidmvp.entities.AccountInfoEntity;
 
 import java.lang.ref.WeakReference;
 
-public class LoginModel {
+public class LoginModel extends BaseModel {
 
-    private OnLoginResponseCallback mCallback;
+    private LoginTask mLoginTask;
 
-    public void login(String userName, String passWord, OnLoginResponseCallback callback) {
-        this.mCallback = callback;
-        new LoginTask(this).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, userName, passWord);
+    public void login(String userName, String passWord, OnResponseCallback<AccountInfoEntity> callback) {
+        mLoginTask = new LoginTask(callback);
+        mLoginTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, userName, passWord);
     }
 
-    private void onPostExecute(boolean result) {
-        mCallback.onLoginComplete();
-        if (result) {
-            mCallback.onLoginSuccess(1001, "suweya");
-        } else {
-            mCallback.onLoginError("login error");
+    @Override
+    public void cancel() {
+        if (mLoginTask != null && !mLoginTask.isCancelled()) {
+            mLoginTask.cancel(true);
         }
     }
 
-    public interface OnLoginResponseCallback {
+    private static class LoginTask extends AsyncTask<String, Void, HttpResponse<AccountInfoEntity>> {
 
-        void onLoginComplete();
+        private WeakReference<OnResponseCallback<AccountInfoEntity>> mWeakReference;
 
-        void onLoginSuccess(int userId, String userName);
-
-        void onLoginError(String message);
-    }
-
-    private static class LoginTask extends AsyncTask<String, Void, Boolean> {
-
-        private WeakReference<LoginModel> mWeakReference;
-
-        public LoginTask(LoginModel model) {
-            mWeakReference = new WeakReference<>(model);
+        public LoginTask(OnResponseCallback<AccountInfoEntity> callback) {
+            mWeakReference = new WeakReference<>(callback);
         }
 
         @Override
-        protected Boolean doInBackground(String... params) {
+        protected HttpResponse<AccountInfoEntity> doInBackground(String... params) {
             String userName = params[0];
             String passWord = params[1];
-            return "suweya".equals(userName) && "123".equals(passWord);
+            boolean result = "suweya".equals(userName) && "123".equals(passWord);
+            HttpResponse<AccountInfoEntity> response = new HttpResponse<>();
+            response.success = result;
+            response.message = result ? "登录成功" : "登录失败";
+            if (result) {
+                AccountInfoEntity entity = new AccountInfoEntity();
+                entity.userId = 123;
+                entity.userName = "suweya";
+                response.value = entity;
+            }
+            SystemClock.sleep(2000);
+            return response;
         }
 
         @Override
-        protected void onPostExecute(Boolean result) {
-            super.onPostExecute(result);
-            LoginModel model = mWeakReference.get();
-            if (model != null) {
-                model.onPostExecute(result);
+        protected void onPostExecute(HttpResponse<AccountInfoEntity> response) {
+            super.onPostExecute(response);
+            OnResponseCallback<AccountInfoEntity> callback = mWeakReference.get();
+            if (callback != null && response != null) {
+                response.dispatchResponse(callback);
             }
         }
     }

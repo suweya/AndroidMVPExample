@@ -38,6 +38,7 @@ public abstract class BaseActivity<V, P extends BasePresenter<V>> extends AppCom
 
     @Override
     public void onCancel(DialogInterface dialog) {
+        mPresenter.onCancel();
     }
 
     protected void showLoadingDialog(int message) {
