@@ -9,14 +9,14 @@ import android.widget.Toast;
 import net.suweya.androidmvp.MainActivity;
 import net.suweya.androidmvp.R;
 import net.suweya.androidmvp.base.BaseActivity;
-import net.suweya.androidmvp.presenter.LoginPresenterImpl;
+import net.suweya.androidmvp.presenter.LoginPresenter;
 import net.suweya.androidmvp.ui.interfaces.ILoginView;
 
 /**
  * Login Activity
  * Created by suweya on 16/2/29.
  */
-public class LoginActivity extends BaseActivity<ILoginView, LoginPresenterImpl> implements ILoginView {
+public class LoginActivity extends BaseActivity<ILoginView, LoginPresenter> implements ILoginView {
 
     private EditText mEtUserName, mEtPassword;
 
@@ -41,8 +41,8 @@ public class LoginActivity extends BaseActivity<ILoginView, LoginPresenterImpl> 
     }
 
     @Override
-    protected LoginPresenterImpl createPresenter() {
-        return new LoginPresenterImpl();
+    protected LoginPresenter createPresenter() {
+        return new LoginPresenter();
     }
 
     @Override
