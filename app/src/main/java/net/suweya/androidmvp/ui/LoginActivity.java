@@ -6,7 +6,6 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import net.suweya.androidmvp.MainActivity;
 import net.suweya.androidmvp.R;
 import net.suweya.androidmvp.base.BaseActivity;
 import net.suweya.androidmvp.presenter.LoginPresenter;
